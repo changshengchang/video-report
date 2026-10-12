@@ -228,15 +228,35 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: targetUrl }),
         });
-        const meta = await res.json();
-        if (meta.title) {
-          videoTitle = meta.title;
-        }
-        if (meta.duration && meta.duration > 0) {
-          videoDuration = meta.duration;
+        if (res.ok) {
+          const meta = await res.json();
+          if (meta.title) videoTitle = meta.title;
+          if (meta.duration && meta.duration > 0) videoDuration = meta.duration;
+        } else {
+          throw new Error(`Server returned ${res.status}`);
         }
       } catch (err) {
-        console.warn('Oembed fetch failed:', err);
+        console.warn('Backend oembed endpoint failed, trying direct browser oEmbed:', err);
+        try {
+          const directRes = await fetch(
+            `https://www.youtube.com/oembed?url=${encodeURIComponent(targetUrl)}&format=json`
+          );
+          if (directRes.ok) {
+            const directMeta = await directRes.json();
+            if (directMeta.title) {
+              videoTitle = directMeta.title.trim();
+              const colonMatch = videoTitle.match(/(\d{1,2})[:：](\d{2})/);
+              const minMatch = videoTitle.match(/(\d+)\s*(?:分鐘|分|min|mins|m)/i);
+              if (colonMatch) {
+                videoDuration = parseInt(colonMatch[1], 10) * 60 + parseInt(colonMatch[2], 10);
+              } else if (minMatch) {
+                videoDuration = parseInt(minMatch[1], 10) * 60;
+              }
+            }
+          }
+        } catch (directErr) {
+          console.warn('Direct YouTube oEmbed fallback also failed:', directErr);
+        }
       }
 
       setUrlVideoTitle(videoTitle);
