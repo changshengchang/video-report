@@ -1,0 +1,6 @@
+{
+  "name": "影片內容介紹報告生成器",
+  "description": "專業影片內容智慧分析與報告生成工具，支援影片網址與檔案上傳、自訂報告主題、畫面重要片段截取與文字說明編輯、簡約/中等/詳細版規格切換、思源體排版及 PDF/PPT 匯出。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
